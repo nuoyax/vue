@@ -48,6 +48,7 @@
 
 <script>
   import code from './validCode/validCode';
+  import axios from 'axios';
 
   export default {
     name: "Login",
@@ -91,16 +92,27 @@
       this.init()
     },
     mounted(){
-
-
       window.sessionStorage.setItem("time","0")
-
-
-
-
-
     },
     methods: {
+
+
+      async submitLogin() {
+
+        const { name, pass } = this.ruleForm;
+        const {
+          status,
+          statusText,
+          data: { data }
+        } = await api.post("http://localhost:8088/api/login", { name, pass }, 'query', false);
+        if(status!==200){
+          this.$message.error(statusText)
+          return;
+        }
+        this.$message.success(statusText)
+
+        // this.$router.push('/');
+      },
       init(){
         //用session方式保存倒计时剩余时间,弊端:用户可通过更改客户端session值,解决办法将时间上传服务端
         let tmpa=window.sessionStorage.getItem("time")
@@ -139,7 +151,35 @@
 
           if (valid &&this.ruleForm.code==this.identifyCode) {
 
-              this.$message.success("Success" + this.identifyCode)
+            let params = new URLSearchParams();
+            params.append('name', this.ruleForm.name+'');
+            params.append('password', this.ruleForm.pass+'');
+
+            this.$ajax({
+              method: 'post',
+              url: '/api/login',
+              data:params
+//          data: {id: '3', name: 'abc'}
+            }).then((response)=> {
+           if(response.data==true){
+     window.sessionStorage.setItem("token","dasdae12323232")
+             this.$router.push("/home")
+           }else {
+             this.$message.error("工号密码不存在")
+             this.$router.push({ path:'/'  });
+           }
+
+
+
+
+            }).catch(function (error) {
+              console.log(error);
+            })
+
+
+
+
+
 
 
           } else {
